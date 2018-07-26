@@ -1,7 +1,7 @@
 import os
 import requests, json
 
-from flask import Flask, session
+from flask import Flask, session, url_for, render_template, request
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -23,7 +23,46 @@ db = scoped_session(sessionmaker(bind=engine))
 
 
 
-@app.route("/")
+@app.route('/')
 def index():
-    weather = requests.get("https://api.darksky.net/forecast/a3b2b1d3e4bfa52619ee61c7d29e83b1/42.37,-71.11").json()
-    return json.dumps(weather["currently"], indent = 4)
+    return render_template("index.html")
+
+@app.route('/signin', methods = ["GET","POST"])
+def signin():
+
+    if request.method == "POST":
+
+        myusername = request.form.get("myusername")
+        mypassword = request.form.get("mypassword")
+
+        return render_template("success.html", username=myusername, password=mypassword)
+
+    return render_template("signin.html")
+
+@app.route('/signup', methods = ["GET","POST"])
+def signup():
+
+
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+
+        return render_template("success.html", username=username, password=password)
+
+    return render_template("signup.html")
+
+
+
+@app.route('/user/<username>')
+def profile(username):
+    return '{}\'s profile'.format(username)
+
+
+@app.route('/error')
+def error():
+    return "This is an error page."
+
+@app.route('/success')
+def success(username, email, password):
+    return render_template("success.html", username=username, email=email, password=password)

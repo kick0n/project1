@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+
+{% block heading %}
+    Signin Form
+{% endblock %}
+
+{% block body %}
+
+
+<form class="form-horizontal" action='{{ url_for('signin') }}' method="POST">
+    <fieldset class = "text-center">
+        <div id="legend">
+            <legend class="">Sign In</legend>
+        </div>
+        <div class="control-group">
+            <!-- Username -->
+            <label class="control-label" for="myusername">Username</label>
+            <div class="controls">
+                <input type="text" id="myusername" name="myusername" placeholder="" class="input-xlarge">
+                <p class="help-block">Username can contain any letters or numbers, without spaces</p>
+            </div>
+        </div>
+
+
+
+        <div class="control-group">
+            <!-- Password-->
+            <label class="control-label" for="mypassword">Password</label>
+            <div class="controls">
+                <input type="password" id="mypassword" name="mypassword" placeholder="" class="input-xlarge">
+                <p class="help-block">Password should be at least 4 characters</p>
+            </div>
+        </div>
+
+
+        <div class="control-group">
+            <!-- Button -->
+            <div class="controls">
+                <button class="btn btn-success">Sign In</button>
+            </div>
+        </div>
+    </fieldset>
+</form>
+
+
+{% endblock %}
