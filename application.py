@@ -1,7 +1,7 @@
 import os
 import requests, json
 
-from flask import Flask, session, url_for, render_template, request
+from flask import Flask, session, url_for, render_template, request, redirect
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -32,10 +32,19 @@ def signin():
 
     if request.method == "POST":
 
-        myusername = request.form.get("myusername")
-        mypassword = request.form.get("mypassword")
+        session['username'] = request.form.get("username")
+        session['password'] = request.form.get("password")
 
-        return render_template("success.html", username=myusername, password=mypassword)
+        if session['username'] != "" and session['password'] != "":
+            if db.execute("SELECT * FROM users WHERE username = :username AND password = :password", {"username":session['username'], "password":session['password']}).rowcount == 0:
+                return render_template("error.html", message="No such user registered.")
+
+        else:
+            return render_template("error.html", message="please try again.")
+
+        #return profile(username)
+        return redirect(url_for("profile", username=session['username']))
+
 
     return render_template("signin.html")
 
@@ -46,9 +55,12 @@ def signup():
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
+        if username != "" and password != "":
+            db.execute("INSERT INTO users (username, password) VALUES (:username, :password)", {"username":username, "password":password})
+            db.commit()
+            return render_template("success.html", username=username, password=password)
+        return render_template("error.html", message = "no blank fields allowed, please try again")
 
-
-        return render_template("success.html", username=username, password=password)
 
     return render_template("signup.html")
 
@@ -56,13 +68,20 @@ def signup():
 
 @app.route('/user/<username>')
 def profile(username):
-    return '{}\'s profile'.format(username)
+    return render_template("profile.html", username=username)
 
+@app.route('/user/<username>/location/<location>')
+def location(username, location):
+    return render_template("location.html", location=location)
 
-@app.route('/error')
-def error():
-    return "This is an error page."
+@app.route('/search-results', methods = ["GET", "POST"])
+def search():
 
-@app.route('/success')
-def success(username, email, password):
-    return render_template("success.html", username=username, email=email, password=password)
+    #return redirect(url_for('search'))
+    return render_template("search-results.html", username=session['username'])
+
+@app.route('/logout')
+def logout():
+    [session.pop(key) for key in list(session.keys()) if key != '_flashes']
+    return "successfully logged out"
+
