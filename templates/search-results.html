@@ -1,11 +1,19 @@
 {% extends "layout.html" %}
 
 {% block heading %}
-SEARCH RESULTS:
+SEARCH RESULTS FOR: {{ searchterm }}
 {% endblock %}
 
 {% block body %}
-IT WORKED!
-{{session['myusername']}}
-{{username}}
+<h1>Matches:</h1>
+
+    <ul>
+        {% for location in locations %}
+            <li>
+                <a href="{{ url_for('location', location=location.zipcode) }}">
+                    {{ location.city }} {{location.state}} {{ location.zipcode }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
 {% endblock %}
