@@ -5,5 +5,14 @@
 {% endblock %}
 
 {% block body %}
-your chosen location is {{location}}
+your chosen location is {{city}} {{location}} {{lat}} {{longi}}
+URL is {{Url}}
+output is
+    <dl>
+    {% for key, value in outputs.items() %}
+        <dt>{{ key }} : {{ value }}</dt>
+    {% endfor %}
+    </dl>
+
+
 {% endblock %}

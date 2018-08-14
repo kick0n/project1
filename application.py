@@ -1,5 +1,6 @@
 import os
 import requests, json
+import jinja2
 
 from flask import Flask, session, url_for, render_template, request, redirect
 from flask_session import Session
@@ -78,21 +79,29 @@ def signin():
 def search():
     return render_template("search.html")
 
-@app.route('/location/<location>')
-def location(location):
-    return render_template("location.html", location=location)
+@app.route('/location/<city>/<location>')
+def location(location, city):
+    session['lat'] = db.execute("SELECT lat FROM locations WHERE zipcode = :location", {"location":location}).fetchone()
+    session['longi'] = db.execute("SELECT longi FROM locations WHERE zipcode = :location", {"location":location}).fetchone()
+    session['darkskyUrl'] = f"https://api.darksky.net/forecast/a3b2b1d3e4bfa52619ee61c7d29e83b1/{session['lat'][0]},{session['longi'][0]}"
+    weather = requests.get(session['darkskyUrl']).json()
+    #output = json.dumps(weather["currently"], indent = 2)
+    output2 = weather["currently"]
+    typeOf = type(output2)
+    return render_template("location.html", Url=session['darkskyUrl'], location=location, city=city, typeOf=typeOf, outputs=output2, lat=float(session['lat'][0]), longi=float(session['longi'][0]))
 
 
 @app.route('/search-results', methods = ["GET", "POST"])
 def searchResults():
     if request.method=="POST":
-        session['searchterm'] = request.form.get('searchterm')
+        session['searchterm'] = request.form.get('searchterm').upper()
 
         """Lists all matches."""
-        session['locations'] = db.execute("SELECT * FROM locations WHERE id < 20").fetchall()
+        """should not use raw SQL queries with variable interpolation, but project assignment requires us not to use sqlalchemy methods"""
+        session['locations'] = db.execute("SELECT * FROM locations WHERE city LIKE :searchterm OR zipcode LIKE :searchterm", {"searchterm":f"%{session['searchterm']}%"}).fetchall()
         return render_template("search-results.html", locations=session['locations'], searchterm=session['searchterm'])
 
-    return render_template("search-results.html", searchterm=session['searchterm'])
+    #return render_template("search-results.html", searchterm=session['searchterm'])
 
 @app.route('/logout')
 def logout():
@@ -101,5 +110,6 @@ def logout():
 
 @app.route('/api/<int:zipcode>')
 def api(zipcode):
-    return render_template("api.html", zipcode=zipcode)
+    weather2 = requests.get("https://api.darksky.net/forecast/a3b2b1d3e4bfa52619ee61c7d29e83b1/29.76,-95.38").json()
+    return render_template("api.html", zipcode=json.dumps(weather2["currently"], indent = 2))
 

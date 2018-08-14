@@ -10,8 +10,8 @@ SEARCH RESULTS FOR: {{ searchterm }}
     <ul>
         {% for location in locations %}
             <li>
-                <a href="{{ url_for('location', location=location.zipcode) }}">
-                    {{ location.city }} {{location.state}} {{ location.zipcode }}
+                <a href="{{ url_for('location', location=location.zipcode, city=location.city) }}">
+                    {{ location.city }}, {{location.state}} {{ location.zipcode }}
                 </a>
             </li>
         {% endfor %}
